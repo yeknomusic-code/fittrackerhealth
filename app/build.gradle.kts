@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.yeknomusic.ftwbridge"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.yeknomusic.ftwbridge"
