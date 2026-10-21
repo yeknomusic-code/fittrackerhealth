@@ -299,8 +299,16 @@ class SyncEngine(private val ctx: Context, url: String, code: String) {
             }
         }
         if (out.isEmpty()) return 0
+        // merge onto whatever's already saved for each day: a sync that only has fresh steps
+        // (no new heart-rate samples yet, or vice versa) must not erase the other field.
+        val existing = try { readJson("/stats.json") } catch (_: Exception) { null }
         val body = JSONObject()
-        for ((date, v) in out) body.put("stats/$date/hc", v)
+        for ((date, v) in out) {
+            val prevHc = existing?.optJSONObject(date)?.optJSONObject("hc")
+            val merged = if (prevHc != null) JSONObject(prevHc.toString()) else JSONObject()
+            v.keys().forEach { k -> merged.put(k, v.get(k)) }
+            body.put("stats/$date/hc", merged)
+        }
         patch(body)
         return out.size
     }
